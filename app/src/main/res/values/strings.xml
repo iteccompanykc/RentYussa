@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Rent</string>
+    <string name="icon_password_visible">sho password</string>
+    <string name="icon_password_hidden">hide password</string>
+</resources>
