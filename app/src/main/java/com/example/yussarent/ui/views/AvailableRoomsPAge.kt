@@ -6,12 +6,10 @@ import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import com.example.yussarent.data.models.Building
 import com.example.yussarent.data.models.Room
 import com.example.yussarent.data.models.Screen
 import com.example.yussarent.viewModels.RoomViewModel
@@ -19,8 +17,7 @@ import com.example.yussarent.viewModels.RoomViewModel
 @Composable
 fun AvailableRoomsScreen(rooms:List<Room>?= emptyList(), roomViewModel: RoomViewModel?=null, navController: NavHostController, isHome:Boolean=true) {
     val iconColor = MaterialTheme.colorScheme.primary
-    val buildingsState = roomViewModel?.buildings?.observeAsState()
-    val buildings: List<Building>? = buildingsState?.value
+    val buildings = roomViewModel?.buildings?.value ?: emptyList()
     var buildingRooms by remember {
         mutableStateOf(rooms)
     }
@@ -33,13 +30,13 @@ fun AvailableRoomsScreen(rooms:List<Room>?= emptyList(), roomViewModel: RoomView
             verticalArrangement = Arrangement.spacedBy(2.dp),
         ) {
             if (!isHome) {
-                buildings?.let { buildings1 ->
-                    CompanyBuildingList(buildings = buildings1) { selectedBuilding ->
-                        println("Selected $selectedBuilding")
-                        if (selectedBuilding != null) {
+                CompanyBuildingList(buildings = buildings) { selectedBuilding ->
+                    println("Selected $selectedBuilding")
+                    if (selectedBuilding != null) {
+                        if (roomViewModel != null) {
                             buildingRooms = if (selectedBuilding.id!=0) {
                                 roomViewModel.getBuildingAvailableRooms(selectedBuilding.id.toString())
-                                roomViewModel.buildingAvailableRooms.value ?: emptyList()
+                                roomViewModel.buildingAvailableRooms.value
                             } else {
                                 rooms ?: emptyList()
                             }

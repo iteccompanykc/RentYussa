@@ -15,18 +15,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.yussarent.data.models.Building
+import com.example.yussarent.data.models.Invoice
 import com.example.yussarent.data.models.Screen
 import com.example.yussarent.util.CountServicesSingleton
 import com.example.yussarent.viewModels.RoomViewModel
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 import java.time.format.DateTimeFormatter
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun ShowInvoicesWithDate(roomViewModel: RoomViewModel, navController: NavHostController) {
     val iconColor = MaterialTheme.colorScheme.primary
-    val invoices by roomViewModel.dueInvoices.observeAsState()
-    val buildings by roomViewModel.buildings.observeAsState()
-
+    val invoices by roomViewModel.dueInvoices.collectAsState(emptyList())
+    val buildings by roomViewModel.buildings.collectAsState(emptyList())
     var selectedBuilding by remember { mutableStateOf<Building?>(null) }
 
     Column(  verticalArrangement = Arrangement.spacedBy(2.dp)) {

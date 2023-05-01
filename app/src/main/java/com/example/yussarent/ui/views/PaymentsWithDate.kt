@@ -9,7 +9,6 @@ import androidx.compose.material.icons.filled.ThumbUp
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -18,6 +17,7 @@ import com.example.yussarent.data.models.Building
 import com.example.yussarent.data.models.Screen
 import com.example.yussarent.util.CountServicesSingleton
 import com.example.yussarent.viewModels.RoomViewModel
+import kotlinx.coroutines.flow.collectLatest
 import java.time.format.DateTimeFormatter
 
 
@@ -25,9 +25,9 @@ import java.time.format.DateTimeFormatter
 @Composable
 fun ShowPaymentsWithDate(roomViewModel: RoomViewModel, navController: NavHostController) {
     val iconColor = MaterialTheme.colorScheme.primary
-    val payments by roomViewModel.duePayments.observeAsState(emptyList())
-    val buildings by roomViewModel.buildings.observeAsState(emptyList())
-    
+    val payments by roomViewModel.duePayments.collectAsState(emptyList())
+    val buildings by roomViewModel.buildings.collectAsState(emptyList())
+
     var selectedBuilding by remember { mutableStateOf<Building?>(null) }
     Column(  verticalArrangement = Arrangement.spacedBy(2.dp),) {
             CompanyBuildingList(buildings = buildings){

@@ -12,22 +12,19 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.zIndex
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.yussarent.data.models.Building
-import com.example.yussarent.data.models.Room
-import com.example.yussarent.data.models.Screen
-import com.example.yussarent.data.models.User
+import com.example.yussarent.data.models.*
 import com.example.yussarent.data.repositories.impl.RentalRepositoryImpl
 import com.example.yussarent.data.repositories.impl.UserRepositoryImpl
 import com.example.yussarent.ui.theme.RentTheme
@@ -36,6 +33,9 @@ import com.example.yussarent.util.CountServicesSingleton.invoiceSelectedDate
 import com.example.yussarent.util.CountServicesSingleton.paymentSelectedDate
 import com.example.yussarent.viewModels.LoginViewModel
 import com.example.yussarent.viewModels.RoomViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import java.time.format.DateTimeFormatter.*
 import java.util.*
@@ -76,14 +76,81 @@ fun MainScreen(screens: List<Screen>, loginViewModel: LoginViewModel) {
     if(user==null){
         return
     }
-    val coroutineScope = rememberCoroutineScope()
+    val coroutineScope = remember { CoroutineScope(Dispatchers.Main) }
     val rentalRepository = RentalRepositoryImpl(ApiServiceSingleton.createApiService())
-    val roomViewModel = RoomViewModel(repository = rentalRepository, coroutineScope = coroutineScope)
-    val rooms by roomViewModel.rooms.observeAsState(emptyList())
-    val availableRooms by roomViewModel.availableRooms.observeAsState(emptyList())
-    val occupiedRooms by roomViewModel.occupiedRooms.observeAsState(emptyList())
-    val invoices by roomViewModel.dueInvoices.observeAsState(emptyList())
-    val payments by roomViewModel.duePayments.observeAsState(emptyList())
+    val roomViewModel = RoomViewModel(repository = rentalRepository, coroutineScope = rememberCoroutineScope())
+    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+
+   // val roomState by roomViewModel.roomState.collectAsState(RoomState(emptyList(),emptyList(),emptyList(),emptyList(),emptyList()))
+    val isLoading by roomViewModel.overallLoadingState.collectAsState()
+    var buildings by remember {
+        mutableStateOf<List<Building>>(emptyList())
+    }
+    var rooms by remember {
+        mutableStateOf<List<Room>>(emptyList())
+    }
+
+    var availableRooms by remember {
+        mutableStateOf<List<Room>>(emptyList())
+    }
+    var occupiedRooms by remember {
+        mutableStateOf<List<Room>>(emptyList())
+    }
+    var invoices by remember {
+        mutableStateOf<List<Invoice>>(emptyList())
+    }
+    var payments by remember {
+        mutableStateOf<List<Payment>>(emptyList())
+    }
+    val availableRoomsScope = rememberCoroutineScope()
+    val roomsScope = rememberCoroutineScope()
+    val duePaymentsScope = rememberCoroutineScope()
+    val occupiedRoomsScope=rememberCoroutineScope()
+    val dueInvoicesRoomsScope=rememberCoroutineScope()
+    val buildingsScope=rememberCoroutineScope()
+    val job = remember { coroutineScope.launch {
+        availableRoomsScope.launch {
+            roomViewModel.availableRooms.collectLatest { new_rooms ->
+                availableRooms = new_rooms
+            }
+        }
+        roomsScope.launch {
+            roomViewModel.rooms.collectLatest { new_rooms ->
+                rooms = new_rooms
+            }
+        }
+
+        duePaymentsScope.launch {
+            roomViewModel.duePayments.collectLatest { newPayments ->
+                payments = newPayments
+            }
+        }
+        occupiedRoomsScope.launch {
+            roomViewModel.occupiedRooms.collectLatest { new_rooms ->
+                occupiedRooms = new_rooms
+            }
+        }
+        dueInvoicesRoomsScope.launch {
+            roomViewModel.dueInvoices.collectLatest { newInvoices ->
+                invoices = newInvoices
+            }
+        }
+        buildingsScope.launch {
+            roomViewModel.buildings.collectLatest { new_buildings ->
+                buildings = new_buildings
+            }
+        }
+    }
+    }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            job.cancel()
+        }
+    }
+
+
+    //roomViewModel.collectFlows()
 
     val roomCounts = mapOf(
         Screen.AvailableRooms to availableRooms.size,
@@ -122,42 +189,43 @@ fun MainScreen(screens: List<Screen>, loginViewModel: LoginViewModel) {
             roomViewModel.getDueInvoices(invoiceSelectedDate.format(ISO_LOCAL_DATE))
         }
     }
+
     // Set up the theme for the whole app
     val navController = rememberNavController()
-val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
-        RentTheme(darkTheme = ThemeManager.isDarkTheme) {
+    RentTheme(darkTheme = ThemeManager.isDarkTheme) {
 
             TopNavigationDrawer(drawerState, content = {
-                Scaffold(
-                    modifier= Modifier
-                        .nestedScroll(scrollBehavior.nestedScrollConnection ),
-                    topBar = {
-                        TopAppBar(
-                          navigationIcon ={
-                              IconButton(
-                                  onClick = { scope.launch { drawerState.openOrClose() } },
-                                  modifier = Modifier.padding(16.dp)
-                              ) {
-                                  val icon = if (drawerState.isClosed) Icons.Default.Menu else Icons.Default.Close
-                                  Icon(icon, contentDescription = null, modifier = Modifier.size(32.dp))
-                              }
-                          },
-                            title = {
-                                Row(verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                    Spacer(modifier =Modifier.padding(12.dp) )
-                                    Text(text = "Rent Management")
-                                }
-                            },
 
-                            colors = TopAppBarDefaults.mediumTopAppBarColors(
-                                containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp)
-                            ),
-                            scrollBehavior = scrollBehavior
-                        )
-                    },
-                    bottomBar = { BottomNavigationBar(navController = navController, screens = screens, roomCounts = roomCounts) }
-                ) {padding->
+                    Scaffold(
+                        modifier= Modifier
+                            .nestedScroll(scrollBehavior.nestedScrollConnection ),
+                        topBar = {
+                            TopAppBar(
+                                navigationIcon ={
+                                    IconButton(
+                                        onClick = { scope.launch { drawerState.openOrClose() } },
+                                        modifier = Modifier.padding(16.dp)
+                                    ) {
+                                        val icon = if (drawerState.isClosed) Icons.Default.Menu else Icons.Default.Close
+                                        Icon(icon, contentDescription = null, modifier = Modifier.size(32.dp))
+                                    }
+                                },
+                                title = {
+                                    Row(verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Spacer(modifier =Modifier.padding(12.dp) )
+                                        Text(text = "Rent Management")
+                                    }
+                                },
+
+                                colors = TopAppBarDefaults.mediumTopAppBarColors(
+                                    containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp)
+                                ),
+                                scrollBehavior = scrollBehavior
+                            )
+                        },
+                        bottomBar = { BottomNavigationBar(navController = navController, screens = screens, roomCounts = roomCounts) }
+                    ) {padding->
 
                         Box(modifier = Modifier
                             .fillMaxSize()
@@ -166,13 +234,37 @@ val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
                                 navController = navController,
                                 startDestination = Screen.Home.route
                             ) {
-                                composable(Screen.Home.route) {
-                                    Box( modifier = Modifier
-                                        .fillMaxSize()
-                                        .zIndex(1f)){
-                                        HomeScreen(roomsData=roomsData, invoices = invoices, payments =payments,navController)
+
+                                    composable(Screen.Home.route) {
+                                        Surface( color = Color.White,
+                                            modifier = Modifier
+                                                .fillMaxSize()
+                                                .wrapContentSize(align = Alignment.Center)
+                                                .shadow(if (isLoading) 16.dp else 0.dp)) {
+                                            Box(
+                                                modifier = Modifier.fillMaxSize(),
+                                                contentAlignment = Alignment.Center
+                                            ) {
+                                                if (isLoading) {
+                                                    Box(
+                                                        modifier = Modifier.size(128.dp),
+                                                        contentAlignment = Alignment.Center
+                                                    ) {
+                                                       LoadingAnimation3()
+                                                       // DialogBoxLoading()
+                                                    }
+                                                } else {
+                                                    HomeScreen(
+                                                        roomsData = roomsData,
+                                                        invoices = invoices,
+                                                        payments = payments,
+                                                        navController
+                                                    )
+                                                }
+                                            }
+                                        }
+
                                     }
-                                }
                                 composable(Screen.AvailableRooms.route) {
                                     AvailableRoomsScreen(rooms = availableRooms, roomViewModel,navController, isHome = false)
                                 }
@@ -201,7 +293,7 @@ val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
 
             })
 
-        }
+}
     }
 
 
