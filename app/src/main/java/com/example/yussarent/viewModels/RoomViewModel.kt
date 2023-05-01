@@ -89,7 +89,7 @@ class RoomViewModel @Inject constructor(
 
     var user: User? = UserSingleton.user
 
-    private val flows = listOf(
+    private val loadingFlows = listOf(
         _roomsLoading,
         _availableRoomsLoading,
         _occupiedRoomsLoading,
@@ -118,7 +118,7 @@ class RoomViewModel @Inject constructor(
     }
     init {
         viewModelScope.launch {
-            flows.all { flow ->
+            loadingFlows.all { flow ->
                 flow.collect { value ->
                     _overallLoadingState.emit(value)
                 }
@@ -265,7 +265,6 @@ class RoomViewModel @Inject constructor(
 
                 it.printStackTrace()
                 _dueBuildingPaymentsLoading.emit(false)
-
             }
         }
     }
