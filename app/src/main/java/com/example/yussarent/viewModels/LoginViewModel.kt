@@ -1,6 +1,5 @@
 package com.example.yussarent.viewModels
 
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -16,8 +15,8 @@ import javax.inject.Inject
 class LoginViewModel @Inject constructor(private val userRepository: UserRepositoryImpl) :
     ViewModel() {
 
-    private val _loginResult = MutableLiveData<LoginResult>()
-    val loginResult: LiveData<LoginResult>
+    private val _loginResult = MutableLiveData<LoginResult?>()
+    val loginResult: MutableLiveData<LoginResult?>
      get() = _loginResult
 
     fun login(username: String, password: String) {
@@ -27,16 +26,11 @@ class LoginViewModel @Inject constructor(private val userRepository: UserReposit
             }
             result.onSuccess { user ->
                 if(user!=null) {
-                    if (user.acc_id != null) {
-                        _loginResult.value = user.let {user->
-                            LoginResult.Success(user)
-                        }
-                        UserSingleton.user=user
-                        loginResult.value?.let { LoginResultSingleton.setLoginResult(it) }
-                    } else {
-                        _loginResult.value = LoginResult.Error("Authentication error")
-                        LoginResultSingleton.resetLoginResult()
+                    _loginResult.value = user.let {
+                        LoginResult.Success(it)
                     }
+                    UserSingleton.user=user
+                    loginResult.value?.let { LoginResultSingleton.setLoginResult(it) }
 
                 }
                 else{

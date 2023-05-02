@@ -6,18 +6,38 @@ import androidx.compose.runtime.collectAsState
 import androidx.lifecycle.*
 import com.example.yussarent.data.models.*
 import com.example.yussarent.data.repositories.impl.RentalRepositoryImpl
+import com.example.yussarent.util.INetworkErrorHandler
+import com.example.yussarent.util.NetworkError
+import com.example.yussarent.util.NetworkError.handleError
+import com.example.yussarent.util.NetworkErrorHandlerFactory
 import com.example.yussarent.util.UserSingleton
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import javax.inject.Inject
+import javax.inject.Named
 
 @HiltViewModel
 class RoomViewModel @Inject constructor(
     private val repository: RentalRepositoryImpl,
-    private val coroutineScope: CoroutineScope
+    private val coroutineScope: CoroutineScope,
+    private val networkErrorHandlerFactory: NetworkErrorHandlerFactory,
+    @Named("RoomListNetworkErrorHandler") val roomListNetworkErrorHandler: INetworkErrorHandler,
+    @Named("BuildingDueInvoicesNetworkErrorHandler")
+     val buildingDueInvoicesNetworkErrorHandler: INetworkErrorHandler,
+    @Named("DueInvoicesNetworkErrorHandler")
+    val dueInvoicesNetworkErrorHandler: INetworkErrorHandler,
+    @Named("AvailableRoomsNetworkErrorHandler")
+    val availableRoomsNetworkErrorHandler: INetworkErrorHandler,
+    @Named("BuildingDuePaymentNetworkErrorHandler")
+     val buildingDuePaymentNetworkErrorHandler: INetworkErrorHandler,
+    @Named("BuildingsListNetworkErrorHandler")
+    val buildingsListNetworkErrorHandler: INetworkErrorHandler,
+    @Named("OccupiedRoomsNetworkErrorHandler")
+    val occupiedRoomsNetworkErrorHandler: INetworkErrorHandler
 ) : ViewModel() {
 
+    private val _duePayementsForBuilding : MutableLiveData<Boolean> = MutableLiveData(false)
     private val _availableRoomsLoading = MutableStateFlow(false)
     val availableRoomsLoading: StateFlow<Boolean> = _availableRoomsLoading
 
@@ -125,10 +145,25 @@ class RoomViewModel @Inject constructor(
             }
 
         }
-
     }
 
     val overallLoadingState: StateFlow<Boolean> = _overallLoadingState
+    fun refresh(){
+        if (rooms.value.isEmpty() && roomsLoading.value==false){
+            getRooms()
+        }
+        if (availableRooms.value.isEmpty() && availableRoomsLoading.value==false && buildingsAvailableRoomsLoading.value==false){
+            getAvailableRooms()
+        }
+        if (occupiedRooms.value.isEmpty() && occupiedRoomsLoading.value==false && buildingsOccupiedLoading.value==false){
+            getOccupiedRooms()
+        }
+        if(buildings.value.isEmpty() && buildingsLoading.value==false){
+            getBuildings()
+        }
+
+    }
+
     fun getRooms() {
 
         coroutineScope.launch {
@@ -141,10 +176,14 @@ class RoomViewModel @Inject constructor(
                     _rooms.emit(rooms)
                 }
                 _roomsLoading.emit(false)
+
             }.onFailure {
 
                 it.printStackTrace()
+                Log.e("ROOM_VIEW_MODEL",it.toString())
                 _roomsLoading.emit(false)
+                roomListNetworkErrorHandler.handleError(it)
+                NetworkError.handleError(it)
             }
         }
     }
@@ -159,15 +198,21 @@ class RoomViewModel @Inject constructor(
             result.onSuccess { rooms ->
                 _availableRooms.emit(rooms!!)
                 _availableRoomsLoading.emit(false)
+
             }.onFailure {
 
                 it.printStackTrace()
+                Log.e("ROOM_VIEW_MODEL",it.toString())
                 _availableRoomsLoading.emit(false)
-
+                availableRoomsNetworkErrorHandler.handleError(it)
+                NetworkError.handleError(it)
             }
 
         }
     }
+
+
+
     fun getOccupiedRooms() {
 
         coroutineScope.launch {
@@ -178,10 +223,14 @@ class RoomViewModel @Inject constructor(
             result.onSuccess { rooms ->
                 _occupiedRooms.emit(rooms!!)
                 _occupiedRoomsLoading.emit(false)
+
             }.onFailure {
 
                 it.printStackTrace()
+                Log.e("ROOM_VIEW_MODEL",it.toString())
                 _occupiedRoomsLoading.emit(false)
+                occupiedRoomsNetworkErrorHandler.handleError(it)
+                NetworkError.handleError(it)
             }
 
         }
@@ -203,11 +252,15 @@ class RoomViewModel @Inject constructor(
             }.onFailure {
 
                 it.printStackTrace()
+                Log.e("ROOM_VIEW_MODEL",it.toString())
                 _dueInvoicesLoading.emit(false)
+                dueInvoicesNetworkErrorHandler.handleError(it)
+                NetworkError.handleError(it)
             }
 
         }
     }
+
 
     fun getBuildingDueInvoices(date:String, buildingId: String) {
 
@@ -221,10 +274,13 @@ class RoomViewModel @Inject constructor(
             result.onSuccess { invoices ->
                 _buildingDueInvoices.emit(invoices)
                 _buildingDueInvoicesLoading.emit(false)
-            }.onFailure {
 
+            }.onFailure {
                 it.printStackTrace()
+                Log.e("ROOM_VIEW_MODEL",it.toString())
                 _buildingDueInvoicesLoading.emit(false)
+                buildingDueInvoicesNetworkErrorHandler.handleError(it)
+                NetworkError.handleError(it)
             }
 
         }
@@ -243,10 +299,14 @@ class RoomViewModel @Inject constructor(
             result.onSuccess { payments ->
                 _duePayments.emit(payments!!)
                 _duePaymentsLoading.emit(false)
+
             }.onFailure {
 
                 it.printStackTrace()
+                Log.e("ROOM_VIEW_MODEL",it.toString())
                 _duePaymentsLoading.emit(false)
+                NetworkError.handleError(it)
+
             }
         }
     }
@@ -258,13 +318,16 @@ class RoomViewModel @Inject constructor(
                 repository.getBuildingDuePayments(buildingId,date)
             }
             result.onSuccess { payments ->
-
                 _dueBuildingPayments.emit(payments)
                 _dueBuildingPaymentsLoading.emit(false)
+
             }.onFailure {
 
                 it.printStackTrace()
+                Log.e("ROOM_VIEW_MODEL",it.toString())
                 _dueBuildingPaymentsLoading.emit(false)
+                buildingDuePaymentNetworkErrorHandler.handleError(it)
+                NetworkError.handleError(it)
             }
         }
     }
@@ -280,12 +343,14 @@ class RoomViewModel @Inject constructor(
            result.onSuccess {
                _buildings.emit(it!!)
                _buildingsLoading.emit(false)
-               println("Buildings ${buildings.value}")
+
            }.onFailure {
 
                it.printStackTrace()
+               Log.e("ROOM_VIEW_MODEL",it.toString())
                _buildingsLoading.emit(false)
-
+                buildingsListNetworkErrorHandler.handleError(it)
+               NetworkError.handleError(it)
            }
        }
 
@@ -301,17 +366,19 @@ class RoomViewModel @Inject constructor(
             result.onSuccess { rooms ->
                 _buildingAvailableRooms.emit(rooms)
                 _buildingsAvailableRoomsLoading.emit(false)
+
             }.onFailure {
 
                 it.printStackTrace()
-                _buildingsAvailableRoomsLoading.value=false
-
+                _buildingsAvailableRoomsLoading.emit(false)
+                Log.e("ROOM_VIEW_MODEL",it.toString())
+                availableRoomsNetworkErrorHandler.handleError(it)
+                NetworkError.handleError(it)
             }
 
         }
     }
     fun getBuildingOccupiedRooms(buildingId: String) {
-
         coroutineScope.launch {
             _buildingsOccupiedLoading.emit(true)
             val result = kotlin.runCatching {
@@ -320,11 +387,14 @@ class RoomViewModel @Inject constructor(
             result.onSuccess { rooms ->
                 _buildingOccupiedRooms.emit(rooms)
                 _buildingsOccupiedLoading.emit(false)
+
             }.onFailure {
 
                 it.printStackTrace()
+                Log.e("ROOM_VIEW_MODEL",it.toString())
                 _buildingsOccupiedLoading.emit(false)
-
+                occupiedRoomsNetworkErrorHandler.handleError(it)
+                NetworkError.handleError(it)
             }
 
         }

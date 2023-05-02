@@ -44,14 +44,7 @@ object AppModule {
              .build()
              .create(ApiService::class.java)
     }
-    @Provides
-    @Singleton
-    fun provideRoomViewModel(
-        repository: RentalRepositoryImpl,
-        coroutineScope: CoroutineScope
-    ): RoomViewModel {
-        return RoomViewModel(repository, coroutineScope)
-    }
+
 @Provides
 @Singleton
 fun provideLoginViewModel(userRepository: UserRepositoryImpl): LoginViewModel {

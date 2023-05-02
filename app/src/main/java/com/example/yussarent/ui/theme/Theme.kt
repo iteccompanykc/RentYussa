@@ -66,7 +66,7 @@ fun RentTheme(
     if (!view.isInEditMode) {
         SideEffect {
             (view.context as Activity).window.statusBarColor = colorScheme.primary.toArgb()
-            WindowCompat.getInsetsController((view.context as Activity).window, view)?.isAppearanceLightStatusBars = darkTheme
+            WindowCompat.getInsetsController((view.context as Activity).window, view).isAppearanceLightStatusBars = darkTheme
         }
     }
 

@@ -31,7 +31,6 @@ fun AvailableRoomsScreen(rooms:List<Room>?= emptyList(), roomViewModel: RoomView
         ) {
             if (!isHome) {
                 CompanyBuildingList(buildings = buildings) { selectedBuilding ->
-                    println("Selected $selectedBuilding")
                     if (selectedBuilding != null) {
                         if (roomViewModel != null) {
                             buildingRooms = if (selectedBuilding.id!=0) {

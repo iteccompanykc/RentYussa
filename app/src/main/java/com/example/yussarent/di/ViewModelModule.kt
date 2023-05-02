@@ -11,15 +11,15 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import dagger.multibindings.IntoMap
 
-@Module
-@InstallIn(SingletonComponent::class)
-abstract class ViewModelModule {
-
-    @Binds
-    @IntoMap
-    @ViewModelKey(LoginViewModel::class)
-    abstract fun bindLoginViewModel(loginViewModel: LoginViewModel): ViewModel
-
-    @Binds
-    abstract fun bindViewModelFactory(factory: ViewModelFactory): ViewModelProvider.Factory
-}
+//@Module
+//@InstallIn(SingletonComponent::class)
+//abstract class ViewModelModule {
+//
+//    @Binds
+//    @IntoMap
+//    @ViewModelKey(LoginViewModel::class)
+//    abstract fun bindLoginViewModel(loginViewModel: LoginViewModel): ViewModel
+//
+//    @Binds
+//    abstract fun bindViewModelFactory(factory: ViewModelFactory): ViewModelProvider.Factory
+//}
