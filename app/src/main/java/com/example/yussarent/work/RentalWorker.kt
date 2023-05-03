@@ -14,7 +14,7 @@ class RentalWorker(
     override suspend fun doWork(): Result {
         return try {
             // Call the method in the rental repository to get the list of available rooms
-            val availableRooms = rentalRepository.getAvailableRooms("9")
+            //val availableRooms = rentalRepository.getAvailableRooms("9")
 
             // Do something with the available rooms
 

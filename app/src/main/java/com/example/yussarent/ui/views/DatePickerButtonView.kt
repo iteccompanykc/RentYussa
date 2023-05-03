@@ -58,8 +58,6 @@ fun DatePickerButton(
             .height(64.dp)
             .fillMaxWidth()
             .padding(horizontal = 16.dp)
-            .background(MaterialTheme.colorScheme.onTertiary)
-
     ) {
         Button(
             onClick = {  calendarState.show() },

@@ -1,9 +1,11 @@
 package com.example.yussarent.ui.views
 
+import android.os.Build
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -40,57 +42,53 @@ import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class LoginActivity:  ComponentActivity() {
-    @OptIn(ExperimentalMaterial3Api::class)
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val apiService = ApiServiceSingleton.createApiService()
         val userRepository = UserRepositoryImpl(apiService)
         val loginViewModel = LoginViewModel(userRepository)
+
         setContent {
             RentTheme {
-                Scaffold(
-                    content = {padding ->
-                        Column(
-                            modifier = Modifier
-                                .padding(padding)){
-                            Box(modifier = Modifier.fillMaxSize()) {
-                                val navController = rememberNavController()
-                                NavHost(navController = navController, startDestination = "login") {
-                                    composable("login") {
-                                        Box(modifier = Modifier.fillMaxSize()) {
+                val navController = rememberNavController()
 
-                                            LoginScreen(loginViewModel, navController = navController)
-                                        }
-                                    }
-                                    composable(Screen.Home.route) {
-                                        // Your main screen composable that uses the user object
-                                        val screens = listOf(
-                                            Screen.Home,
-                                            Screen.AvailableRooms,
-                                            Screen.OccupiedRooms,
-                                            Screen.Invoice,
-                                            Screen.Payments
-                                        )
-                                        Surface(
-                                            modifier = Modifier.fillMaxSize(),
-                                            color = MaterialTheme.colorScheme.background
-                                        ) {
-                                            MainScreen(screens = screens, loginViewModel)
-                                        }
-                                    }
-
-                                }
+                NavHost(navController = navController, startDestination = "splash") {
+                    composable("splash") {
+                        SplashScreen {
+                            navController.navigate("login") {
+                                popUpTo("splash") { inclusive = true }
                             }
                         }
-
                     }
-
-                )
+                    composable("login") {
+                        Box(modifier = Modifier.fillMaxSize()) {
+                            LoginScreen(loginViewModel, navController = navController)
+                        }
+                    }
+                    composable(Screen.Home.route) {
+                        // Your main screen composable that uses the user object
+                        val screens = listOf(
+                            Screen.Home,
+                            Screen.AvailableRooms,
+                            Screen.OccupiedRooms,
+                            Screen.Invoice,
+                            Screen.Payments
+                        )
+                        Surface(
+                            modifier = Modifier.fillMaxSize(),
+                            color = MaterialTheme.colorScheme.background
+                        ) {
+                            MainScreen(screens = screens, loginViewModel)
+                        }
+                    }
+                }
             }
-
         }
     }
 }
+
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(loginViewModel: LoginViewModel, navController: NavController) {

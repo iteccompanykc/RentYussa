@@ -28,7 +28,7 @@ fun TopNavigationDrawer(drawerState: DrawerState,content: @Composable () -> Unit
                 modifier = Modifier
                     .width(300.dp)
                     .fillMaxHeight()
-                    .background(MaterialTheme.colorScheme.surface),
+                   .background(MaterialTheme.colorScheme.surface),
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {

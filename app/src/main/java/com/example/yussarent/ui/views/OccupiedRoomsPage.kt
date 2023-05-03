@@ -31,17 +31,15 @@ fun OccupiedRoomsScreen(rooms:List<Room>?= emptyList(), roomViewModel: RoomViewM
         ) {
 
             if (!isHome) {
-                buildings?.let { buildings1 ->
-                    CompanyBuildingList(buildings = buildings1) {selectedBuilding->
-                        println("Selected $selectedBuilding")
-                        if (selectedBuilding != null) {
-                            if (roomViewModel != null) {
-                                buildingRooms = if (selectedBuilding.id!=0) {
-                                    roomViewModel?.getBuildingOccupiedRooms(selectedBuilding.id.toString())
-                                    roomViewModel.buildingOccupiedRooms.value
-                                } else{
-                                    rooms?: emptyList()
-                                }
+                CompanyBuildingList(buildings = buildings) { selectedBuilding->
+
+                    if (selectedBuilding != null) {
+                        if (roomViewModel != null) {
+                            buildingRooms = if (selectedBuilding.id!=0) {
+                                roomViewModel.getBuildingOccupiedRooms(selectedBuilding.id.toString())
+                                roomViewModel.buildingOccupiedRooms.value
+                            } else{
+                                rooms?: emptyList()
                             }
                         }
                     }

@@ -11,7 +11,9 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -29,14 +31,22 @@ fun ProfileAndSettings(user: User, onLogout:  () -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(horizontal = 16.dp, vertical = 8.dp)
-            .background(MaterialTheme.colorScheme.background)
-    ) {
+            .background(
+                Brush.verticalGradient(
+                    listOf(
+                        Color(0xFF0077c2),
+                        Color(0xFF87cefa)
+                    )
+                )
+            )
+    )
+
+    {
         Text(
             text = "Profile and Settings",
             style = MaterialTheme.typography.titleMedium,
             modifier = Modifier.padding(bottom = 8.dp, start = 8.dp),
-            color = MaterialTheme.colorScheme.secondary
+            color = MaterialTheme.colorScheme.onBackground
         )
 
         // User Profile section

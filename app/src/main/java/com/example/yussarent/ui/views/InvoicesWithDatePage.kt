@@ -20,7 +20,6 @@ import androidx.navigation.NavHostController
 import com.example.yussarent.data.models.Building
 import com.example.yussarent.data.models.Screen
 import com.example.yussarent.util.CountServicesSingleton
-import com.example.yussarent.util.NetworkError
 import com.example.yussarent.viewModels.RoomViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

@@ -19,7 +19,6 @@ import androidx.navigation.NavHostController
 import com.example.yussarent.data.models.Building
 import com.example.yussarent.data.models.Screen
 import com.example.yussarent.util.CountServicesSingleton
-import com.example.yussarent.util.NetworkError
 import com.example.yussarent.viewModels.RoomViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -69,6 +68,7 @@ fun ShowPaymentsWithDate(roomViewModel: RoomViewModel, navController: NavHostCon
         Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
             CompanyBuildingList(buildings = buildings) {
                 selectedBuilding = it
+
                 paymentNumber = if ((selectedBuilding?.id ?: 0) != 0) {
                     roomViewModel.getBuildingDuePayments(
                         CountServicesSingleton.paymentSelectedDate.format(
