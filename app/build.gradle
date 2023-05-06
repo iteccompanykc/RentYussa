@@ -6,16 +6,16 @@ plugins {
 }
 
 android {
-    namespace 'com.example.yussarent'
+    namespace 'com.itec.yussarent'
     compileSdk 33
     compileSdkPreview "UpsideDownCake"
     buildToolsVersion "30.0.3"
     defaultConfig {
-        applicationId "com.example.yussarent"
+        applicationId "com.itec.yussarent"
         minSdk 21
         targetSdk 33
-        versionCode 1
-        versionName "1.0"
+        versionCode 5
+        versionName "1.4"
         multiDexEnabled = true
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {

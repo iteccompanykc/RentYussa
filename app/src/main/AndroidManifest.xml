@@ -13,11 +13,11 @@
         android:theme="@style/Theme.YussaRent"
         tools:targetApi="33">
 <!--        android:theme="@style/Theme.YussaRent"-->
-        <activity
-            android:name=".ui.views.MainActivity"
-            android:theme="@style/Theme.YussaRent">
-        </activity>
-        <activity android:name=".ui.views.LoginActivity"
+<!--        <activity-->
+<!--            android:name=".ui.views.MainActivity"-->
+<!--            android:theme="@style/Theme.YussaRent">-->
+<!--        </activity>-->
+        <activity android:name=".ui.views.MainActivity"
             android:exported="true"
             android:theme="@style/SplashTheme"
             >
