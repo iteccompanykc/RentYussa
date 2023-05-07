@@ -34,7 +34,7 @@ interface ApiService {
     @GET("users/{userId}")
     suspend fun getUser(@Path("userId") userId: String): User
     @GET("company")
-    suspend fun getCompany(@Path("company_id") company_id: String): Company
+    suspend fun getCompany(@Query("company_id") company_id: String): Company
     @POST("login")
     @FormUrlEncoded
     suspend fun login(@Field("username") username: String, @Field("password") password: String): Response<ResponseBody>
